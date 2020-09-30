@@ -31,5 +31,11 @@ namespace DotNetDuds.Controllers
             ViewBag.category = category;
             return View();
         }
+
+        public IActionResult AddCategory()
+        {
+            // display a view with an empty input form to capture a new category
+            return View();
+        }
     }
 }
