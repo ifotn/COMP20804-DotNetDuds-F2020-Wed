@@ -48,6 +48,10 @@
                 {
                     <img src="~/img/product-uploads/@item.Image" alt="Product Image" class="thumb" />
                 }
+                else
+                {
+                    <img src="~/img/product-uploads/placeholder.gif" alt="Placeholder Image" class="thumb" />
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Category.Name)
