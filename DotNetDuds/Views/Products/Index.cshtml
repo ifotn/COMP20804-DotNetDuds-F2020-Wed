@@ -44,7 +44,10 @@
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Image)
+                @if (item.Image != null)
+                {
+                    <img src="~/img/product-uploads/@item.Image" alt="Product Image" class="thumb" />
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Category.Name)

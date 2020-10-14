@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DotNetDuds.Data;
 using DotNetDuds.Models;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace DotNetDuds.Controllers
 {
@@ -58,10 +60,30 @@ namespace DotNetDuds.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price,Description,Image,CategoryId")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Price,Description,CategoryId")] Product product, IFormFile Image)
         {
             if (ModelState.IsValid)
             {
+                // process file upload if any before saving so we can also save a unique image name with the product
+                if (Image != null)
+                {
+                    // get temp location of the uploaded image
+                    var tempPath = Path.GetTempFileName();
+
+                    // create a unique file name using a Globally Unique Id mypic.jpg => abc123-mypic.jpg
+                    var uniqueName = Guid.NewGuid() + "-" + Image.FileName;
+
+                    // set destination file path & name dynamically so it works on any server
+                    var uploadPath = System.IO.Directory.GetCurrentDirectory() + "\\wwwroot\\img\\product-uploads\\" + uniqueName;
+
+                    // use a stream to copy the file to the destination folder w/a unique name
+                    using (var stream = new FileStream(uploadPath, FileMode.Create))
+                    await Image.CopyToAsync(stream);
+
+                    // set the product Image property equal the new unique image file name
+                    product.Image = uniqueName;
+                }
+
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -83,7 +105,7 @@ namespace DotNetDuds.Controllers
             {
                 return NotFound();
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories.OrderBy(c => c.Name), "Id", "Name", product.CategoryId);
             return View(product);
         }
 
@@ -92,7 +114,7 @@ namespace DotNetDuds.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Description,Image,CategoryId")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Description,CategoryId")] Product product, IFormFile Image, string CurrentImage)
         {
             if (id != product.Id)
             {
@@ -103,6 +125,30 @@ namespace DotNetDuds.Controllers
             {
                 try
                 {
+                    // process file upload if any before saving so we can also save a unique image name with the product
+                    if (Image != null)
+                    {
+                        // get temp location of the uploaded image
+                        var tempPath = Path.GetTempFileName();
+
+                        // create a unique file name using a Globally Unique Id mypic.jpg => abc123-mypic.jpg
+                        var uniqueName = Guid.NewGuid() + "-" + Image.FileName;
+
+                        // set destination file path & name dynamically so it works on any server
+                        var uploadPath = System.IO.Directory.GetCurrentDirectory() + "\\wwwroot\\img\\product-uploads\\" + uniqueName;
+
+                        // use a stream to copy the file to the destination folder w/a unique name
+                        using (var stream = new FileStream(uploadPath, FileMode.Create))
+                            await Image.CopyToAsync(stream);
+
+                        // set the product Image property equal the new unique image file name
+                        product.Image = uniqueName;
+                    }
+                    else
+                    {
+                        product.Image = CurrentImage;
+                    }
+
                     _context.Update(product);
                     await _context.SaveChangesAsync();
                 }
@@ -119,7 +165,7 @@ namespace DotNetDuds.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories.OrderBy(c => c.Name), "Id", "Name", product.CategoryId);
             return View(product);
         }
 
