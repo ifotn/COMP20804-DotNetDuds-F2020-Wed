@@ -22,7 +22,8 @@ namespace DotNetDuds.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Products.Include(p => p.Category);
+            // add OrderBy to sort the product query result by A-Z by Name
+            var applicationDbContext = _context.Products.Include(p => p.Category).OrderBy(p => p.Name);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -48,7 +49,7 @@ namespace DotNetDuds.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            ViewData["CategoryId"] = new SelectList(_context.Categories.OrderBy(c => c.Name), "Id", "Name");
             return View();
         }
 
@@ -65,7 +66,7 @@ namespace DotNetDuds.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories.OrderBy(c => c.Name), "Id", "Name", product.CategoryId);
             return View(product);
         }
 
