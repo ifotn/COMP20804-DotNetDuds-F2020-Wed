@@ -9,9 +9,11 @@ using DotNetDuds.Data;
 using DotNetDuds.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DotNetDuds.Controllers
 {
+    [Authorize(Roles = "Administrator")]
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;

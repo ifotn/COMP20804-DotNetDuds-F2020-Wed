@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace DotNetDuds.Controllers
 {
     // make all the methods for authenticated users only
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -78,6 +78,9 @@ namespace DotNetDuds.Areas.Identity.Pages.Account
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
+                    // add 1 user to the Adminstrator role
+                    var roleResult = await _userManager.AddToRoleAsync(user, "Customer");
+
                     _logger.LogInformation("User created a new account with password.");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
