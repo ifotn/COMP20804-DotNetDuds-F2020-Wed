@@ -24,7 +24,7 @@
                     {
                         <img src="~/img/product-uploads/placeholder.gif" alt="Placeholder Image" class="thumb" />
                     }
-                    <form method="post" action="/Shop/AddToCart">
+                    <form method="post" asp-controller="Shop" asp-action="AddToCart">
                         <input name="ProductId" id="ProductId" type="hidden" value="@p.Id" />
                         <fieldset class="form-group">
                             <label class="control-label" for="Quantity">Quantity</label>

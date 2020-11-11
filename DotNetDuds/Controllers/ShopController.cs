@@ -47,6 +47,7 @@ namespace DotNetDuds.Controllers
 
         // POST: /Shop/AddToCart
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult AddToCart(int ProductId, int Quantity)
         {
             // look up the current product price
@@ -84,6 +85,16 @@ namespace DotNetDuds.Controllers
             }
 
             return HttpContext.Session.GetString("CustomerId");
+        }
+
+        // GET: /Shop/Cart
+        public IActionResult Cart()
+        {
+            // get items in current user's cart
+            var cartItems = _context.Carts.Include(c => c.Product).Where(c => c.CustomerId == HttpContext.Session.GetString("CustomerId")).ToList();
+
+            // display a view and pass the items for display
+            return View(cartItems);
         }
     }
 }
