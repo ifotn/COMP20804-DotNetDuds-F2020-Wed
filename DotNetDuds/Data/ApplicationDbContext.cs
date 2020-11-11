@@ -13,6 +13,7 @@ namespace DotNetDuds.Data
         // reference the data model classes - in-memory versions of our tables that support CRUD
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Cart> Carts { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

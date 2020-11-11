@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetDuds.Data;
+using DotNetDuds.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,6 +43,47 @@ namespace DotNetDuds.Controllers
 
             // load the Browse view & pass the list of products for display
             return View(products);
+        }
+
+        // POST: /Shop/AddToCart
+        [HttpPost]
+        public IActionResult AddToCart(int ProductId, int Quantity)
+        {
+            // look up the current product price
+            var price = _context.Products.Find(ProductId).Price;
+
+            // set the customer
+            var customerId = GetCustomerId();
+
+            // create /populate a new cart object 
+            var cart = new Cart
+            {
+                ProductId = ProductId,
+                Quantity = Quantity,
+                Price = price,
+                CustomerId = customerId,
+                DateCreated = DateTime.Now
+            };
+
+            // save to the Carts table in the db
+            _context.Carts.Add(cart);
+            _context.SaveChanges();
+
+            // redirect to Cart page
+            return RedirectToAction("Cart");
+        }
+
+        // check session for existing Session ID.  If none exists, first create it then send it back.
+        private string GetCustomerId()
+        {
+            // check if there is already a CustomerId session variable
+            if (HttpContext.Session.GetString("CustomerId") == null)
+            {
+                // this is the 1st item in this user's cart; generate Guid and store in session variable
+                HttpContext.Session.SetString("CustomerId", Guid.NewGuid().ToString());
+            }
+
+            return HttpContext.Session.GetString("CustomerId");
         }
     }
 }

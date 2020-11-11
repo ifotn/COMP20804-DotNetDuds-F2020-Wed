@@ -44,6 +44,9 @@ namespace DotNetDuds
                 options.ClientSecret = googleAuthNSection["ClientSecret"];
             });
 
+            // enable sessions
+            services.AddSession();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
@@ -69,6 +72,9 @@ namespace DotNetDuds
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // enable sessions
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {
