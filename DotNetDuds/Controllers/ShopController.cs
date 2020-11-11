@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DotNetDuds.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DotNetDuds.Controllers
 {
@@ -26,6 +27,20 @@ namespace DotNetDuds.Controllers
 
             // pass the categories data to the view for display to the shopper
             return View(categories);
+        }
+
+        // GET: /Shop/Browse/3
+        public IActionResult Browse(int id)
+        {
+            // query the db for the products in the selected category
+            var products = _context.Products.Include(p => p.Category).Where(p => p.CategoryId == id).OrderBy(p => p.Name).ToList();
+
+            // get the Category name for display in the page heading
+            ViewBag.Category = products[0].Category.Name;
+            //ViewBag.Category = _context.Categories.Find(id).Name.ToString();
+
+            // load the Browse view & pass the list of products for display
+            return View(products);
         }
     }
 }
