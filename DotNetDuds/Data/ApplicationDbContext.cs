@@ -14,6 +14,9 @@ namespace DotNetDuds.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Cart> Carts { get; set; }
+        // now add DbSets for Order and OrderDetail so we can run a migration to create these tables and then use these DbSets for CRUD
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

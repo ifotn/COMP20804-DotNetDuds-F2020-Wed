@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DotNetDuds.Data;
 using DotNetDuds.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -137,6 +138,35 @@ namespace DotNetDuds.Controllers
 
             // redirect to updated Cart
             return RedirectToAction("Cart");
+        }
+
+        // GET: /Shop/Checkout
+        [Authorize]
+        public IActionResult Checkout()
+        {
+            // load checkout form
+            return View();
+        }
+
+        // POST: /Shop/Checkout
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Checkout([Bind("Address,City,Province,PostalCode")] Order order)
+        {
+            // binding the 4 form inputs to matching Order properties in the parameter list
+            // auto-fill the other 3 properties
+            order.OrderDate = DateTime.Now;
+            order.CustomerId = User.Identity.Name;
+            order.Total = (from c in _context.Carts
+                           where c.CustomerId == HttpContext.Session.GetString("CustomerId")
+                           select c.Quantity * c.Price).Sum();
+
+            // store the order in a Session variable using SessionExtensions.cs library
+            HttpContext.Session.SetObject("Order", order);
+
+            // redirect to Payment so user can pay through Stripe Payment Gateway
+            return RedirectToAction("Payment");
         }
     }
 }
