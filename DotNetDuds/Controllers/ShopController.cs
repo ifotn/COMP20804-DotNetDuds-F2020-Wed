@@ -56,19 +56,32 @@ namespace DotNetDuds.Controllers
             // set the customer
             var customerId = GetCustomerId();
 
-            // create /populate a new cart object 
-            var cart = new Cart
-            {
-                ProductId = ProductId,
-                Quantity = Quantity,
-                Price = price,
-                CustomerId = customerId,
-                DateCreated = DateTime.Now
-            };
+            // check if item already exists in customer's cart
+            var cartItem = _context.Carts.SingleOrDefault(c => c.ProductId == ProductId && c.CustomerId == customerId);
 
-            // save to the Carts table in the db
-            _context.Carts.Add(cart);
-            _context.SaveChanges();
+            if (cartItem == null)
+            {
+                // create /populate a new cart object as customer doesn't already have this product in their cart
+                var cart = new Cart
+                {
+                    ProductId = ProductId,
+                    Quantity = Quantity,
+                    Price = price,
+                    CustomerId = customerId,
+                    DateCreated = DateTime.Now
+                };
+
+                // save to the Carts table in the db
+                _context.Carts.Add(cart);
+                _context.SaveChanges();
+            }
+            else
+            {
+                // increment quantity of the existing cart Item
+                cartItem.Quantity += Quantity;
+                _context.Carts.Update(cartItem);
+                _context.SaveChanges();
+            }          
 
             // redirect to Cart page
             return RedirectToAction("Cart");
@@ -93,8 +106,37 @@ namespace DotNetDuds.Controllers
             // get items in current user's cart
             var cartItems = _context.Carts.Include(c => c.Product).Where(c => c.CustomerId == HttpContext.Session.GetString("CustomerId")).ToList();
 
+            // calc total # of items in the cart to display in the navbar
+            var itemCount = (from c in cartItems
+                            select c.Quantity).Sum();
+
+            // equivalent to the code above but slower
+            //foreach (var item in cartItems)
+            //{
+            //    itemCount += item.Quantity;
+            //}
+
+            HttpContext.Session.SetInt32("ItemCount", itemCount);
+
             // display a view and pass the items for display
             return View(cartItems);
+        }
+
+        // GET: /Shop/RemoveFromCart/3
+        public IActionResult RemoveFromCart(int id)
+        {
+            // find the item with this PK value
+            var cartItem = _context.Carts.Find(id);
+
+            // delete record from Carts table
+            if (cartItem != null)
+            {
+                _context.Carts.Remove(cartItem);
+                _context.SaveChanges();
+            }
+
+            // redirect to updated Cart
+            return RedirectToAction("Cart");
         }
     }
 }
