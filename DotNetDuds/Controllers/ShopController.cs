@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Stripe;
+using Stripe.Checkout;
 
 namespace DotNetDuds.Controllers
 {
@@ -192,6 +193,50 @@ namespace DotNetDuds.Controllers
 
             // load the Payment view
             return View();
+        }
+
+        // POST: /Shop/ProcessPayment
+        [Authorize]
+        [HttpPost]
+        public IActionResult ProcessPayment()
+        {
+            // get the order from the session variable
+            var order = HttpContext.Session.GetObject<Models.Order>("Order");
+
+            // get the Stripe Secret Key from the configuration and pass it before we can create a new checkout session
+            StripeConfiguration.ApiKey = _iconfiguration.GetSection("Stripe")["SecretKey"];
+
+            // code will go here to create and submit Stripe payment charge
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string>
+                {
+                  "card",
+                },
+                LineItems = new List<SessionLineItemOptions>
+                {
+                  new SessionLineItemOptions
+                  {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                      UnitAmount = (long?)(order.Total * 100),
+                      Currency = "cad",
+                      ProductData = new SessionLineItemPriceDataProductDataOptions
+                      {
+                        Name = "DotNetDuds Purchase",
+                      },
+                    },
+                    Quantity = 1,
+                  },
+                },
+                Mode = "payment",
+                SuccessUrl = "https://" + Request.Host + "/Shop/SaveOrder",
+                CancelUrl = "https://" + Request.Host + "/Shop/Cart"
+            };
+
+            var service = new SessionService();
+            Session session = service.Create(options);
+            return Json(new { id = session.Id });
         }
     }
 }
