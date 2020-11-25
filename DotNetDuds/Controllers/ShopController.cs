@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Stripe;
 
 namespace DotNetDuds.Controllers
 {
@@ -16,11 +18,17 @@ namespace DotNetDuds.Controllers
         // db connection
         private readonly ApplicationDbContext _context;
 
+        // app configuration depedency - used to read API keys from appsettings or secret key store
+        private IConfiguration _iconfiguration;
+
         // constructor that accepts a db context object
-        public ShopController(ApplicationDbContext context)
+        public ShopController(ApplicationDbContext context, IConfiguration configuration)
         {
             // instantiate an instance of our db connection when this class is instantiated
             _context = context;
+
+            // instantiate an instance of our app configuration when this class is instantiated
+            _iconfiguration = configuration;
         }
 
         public IActionResult Index()
@@ -152,7 +160,7 @@ namespace DotNetDuds.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Checkout([Bind("Address,City,Province,PostalCode")] Order order)
+        public IActionResult Checkout([Bind("Address,City,Province,PostalCode")] Models.Order order)
         {
             // binding the 4 form inputs to matching Order properties in the parameter list
             // auto-fill the other 3 properties
@@ -167,6 +175,23 @@ namespace DotNetDuds.Controllers
 
             // redirect to Payment so user can pay through Stripe Payment Gateway
             return RedirectToAction("Payment");
+        }
+
+        // GET: /Shop/Payment
+        [Authorize]
+        public IActionResult Payment()
+        {
+            // get the order from the session
+            var order = HttpContext.Session.GetObject<Models.Order>("Order");
+
+            // send the total to the view for display using the ViewBag
+            ViewBag.Total = order.Total;
+
+            // read the Stripe Publishable Key from the configuration and put in ViewBag for the payment form
+            ViewBag.PublishableKey = _iconfiguration.GetSection("Stripe")["PublishableKey"];
+
+            // load the Payment view
+            return View();
         }
     }
 }

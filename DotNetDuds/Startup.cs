@@ -52,8 +52,12 @@ namespace DotNetDuds
             // enable sessions
             services.AddSession();
 
+            // use dependency injection so the controllers can access the app configuration values like API keys
+            services.AddSingleton<IConfiguration>(Configuration);
+
             services.AddControllersWithViews();
             services.AddRazorPages();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
