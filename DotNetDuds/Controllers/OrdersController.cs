@@ -59,7 +59,7 @@ namespace DotNetDuds.Controllers
                 return NotFound();
             }
 
-            return View(order);
+            return View("Details", order);
         }
 
         private bool OrderExists(int id)
