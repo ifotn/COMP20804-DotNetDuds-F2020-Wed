@@ -10,6 +10,7 @@ namespace DotNetDuds.Controllers
     {
         public IActionResult Index()
         {
+            ViewData["Message"] = "This is a message from the controller";
             return View("Index");
         }
     }

@@ -28,7 +28,7 @@ namespace DotNetDuds.Controllers
         {
             // add OrderBy to sort the product query result by A-Z by Name
             var applicationDbContext = _context.Products.Include(p => p.Category).OrderBy(p => p.Name);
-            return View(await applicationDbContext.ToListAsync());
+            return View("Index", await applicationDbContext.ToListAsync());
         }
 
         [AllowAnonymous]

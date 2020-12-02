@@ -32,5 +32,18 @@ namespace DotNetDudsTests
             // assert - does the Index view get returned?
             Assert.AreEqual("Index", result.ViewName);
         }
+
+        [TestMethod]
+        public void IndexViewDataHasMessage()
+        {
+            // arrange
+            var controller = new DummiesController();
+
+            // act
+            var result = (ViewResult)controller.Index();
+
+            // assert - did we get the right message in the ViewData["Message"] property?
+            Assert.AreEqual("This is a message from the controller", result.ViewData["Message"]);
+        }
     }
 }
