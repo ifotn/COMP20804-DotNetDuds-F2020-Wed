@@ -37,7 +37,8 @@ namespace DotNetDuds.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                //return NotFound();
+                return View("404");  // or return View("Error");
             }
 
             var product = await _context.Products
@@ -45,10 +46,11 @@ namespace DotNetDuds.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (product == null)
             {
-                return NotFound();
+                //return NotFound();
+                return View("404"); // or return View("Error");
             }
 
-            return View(product);
+            return View("Details", product);
         }
 
         // GET: Products/Create

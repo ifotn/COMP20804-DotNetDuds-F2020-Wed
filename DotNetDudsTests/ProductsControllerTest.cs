@@ -49,27 +49,72 @@ namespace DotNetDudsTests
             controller = new ProductsController(_context);
         }
 
+        #region Index
         [TestMethod]
-        public void IndexLoadsIndexView()
+            public void IndexLoadsIndexView()
+            {
+                // arrange is all done in TestInitialize
+
+                // act
+                var result = (ViewResult)controller.Index().Result;
+
+                // assert
+                Assert.AreEqual("Index", result.ViewName);
+            }
+
+            [TestMethod]
+            public void IndexReturnsProductList()
+            {
+                // act
+                var result = (ViewResult)controller.Index().Result;
+                List<Product> model = (List<Product>)result.Model;
+
+                // compare the model from the Index method call to the list of mock products in our in-memory db
+                CollectionAssert.AreEqual(products.OrderBy(p => p.Name).ToList(), model);
+            }
+        #endregion Index
+
+        #region Details
+        [TestMethod]
+        public void DetailsNoIdReturns404()
         {
-            // arrange is all done in TestInitialize
-
             // act
-            var result = (ViewResult)controller.Index().Result;
+            var result = (ViewResult)controller.Details(null).Result;
 
-            // assert
-            Assert.AreEqual("Index", result.ViewName);
+            // assert - could also be "Error" expected instead of 404 depending on logic in Details() 
+            Assert.AreEqual("404", result.ViewName);
         }
 
         [TestMethod]
-        public void IndexReturnsProductList()
+        public void DetailsInvalidIdReturns404()
         {
-            // act
-            var result = (ViewResult)controller.Index().Result;
-            List<Product> model = (List<Product>)result.Model;
+            // act - use any Id but 37, 64, 56 as these are all valid ids in the in-memory db
+            var result = (ViewResult)controller.Details(6).Result;
 
-            // compare the model from the Index method call to the list of mock products in our in-memory db
-            CollectionAssert.AreEqual(products.OrderBy(p => p.Name).ToList(), model);
+            // assert - could also be "Error" expected instead of 404 depending on logic in Details() 
+            Assert.AreEqual("404", result.ViewName);
         }
+
+        [TestMethod]
+        public void DetailsValidIdLoadsDetailsView()
+        {
+            // act - use any Id but 37, 64, 56 as these are all valid ids in the in-memory db
+            var result = (ViewResult)controller.Details(64).Result;
+
+            // assert - could also be "Error" expected instead of 404 depending on logic in Details() 
+            Assert.AreEqual("Details", result.ViewName);
+        }
+
+        [TestMethod]
+        public void DetailsValidIdReturnsMatchingProduct()
+        {
+            // act - use any Id but 37, 64, 56 as these are all valid ids in the in-memory db
+            var result = (ViewResult)controller.Details(64).Result;
+            var model = (Product)result.Model;
+
+            // assert - could also be "Error" expected instead of 404 depending on logic in Details() 
+            Assert.AreEqual(products[1], model);
+        }
+        #endregion Details
     }
 }
