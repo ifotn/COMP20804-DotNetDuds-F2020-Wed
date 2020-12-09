@@ -58,6 +58,8 @@ namespace DotNetDuds
             services.AddControllersWithViews();
             services.AddRazorPages();
 
+            // register Swagger generator for API documentation
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -91,6 +93,13 @@ namespace DotNetDuds
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
+            });
+
+            // enable Swagger UI and set the endpoint for the api docs
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "DotNetDuds API v1");
             });
         }
     }
